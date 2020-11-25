@@ -16,3 +16,11 @@ type RatingTopResponse struct {
 type RatingNeighborsResponse struct {
 	Neighbors []Rating `json:"neighbors"`
 }
+
+type RatingInfo struct {
+	Count   uint64 `json:"count"`
+	Leagues []struct {
+		Index      uint64  `json:"index"`
+		Percentile float64 `json:"percentile"`
+	} `json:"leagues"`
+}
