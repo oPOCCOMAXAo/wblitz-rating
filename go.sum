@@ -1,0 +1,4 @@
+gitlab.com/opoccomaxao-go/request v1.0.0 h1:3lGe+jsjF/4qPtqwCn63fOfvJU/UZi08Qot3rDNDlis=
+gitlab.com/opoccomaxao-go/request v1.0.0/go.mod h1:NljAWiXErLJQQGBh94hZjmLg9sfd99u1ocoDWcGytwE=
+golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
+golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
