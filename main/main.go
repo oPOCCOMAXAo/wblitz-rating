@@ -42,14 +42,16 @@ func crawl() {
 }
 
 func analyze() {
-
+	analytics := utils.NewAnalytics(
+		utils.LoadRating("./rating.csv"),
+		utils.LoadStats("./stats.csv"),
+	)
+	count := analytics.TotalCount(4, 4)
+	utils.SaveCountEntry("./count.csv", count)
+	utils.DrawCountEntry("./count", count)
 }
 
 func test() {
-	total := utils.LoadRating("./ratingTest.csv")
-	apiClient := api.New(time.Millisecond*100, 10, getArg(2))
-	stats := utils.NewStatCrawler(apiClient).GetAllStats(total.GetIds())
-	utils.SaveStats("./statsTest.csv", stats)
 }
 
 func help() {
