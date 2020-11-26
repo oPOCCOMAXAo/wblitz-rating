@@ -6,21 +6,22 @@ import (
 	"wblitz-rating/api"
 )
 
-type Crawler struct {
+type RatingCrawler struct {
 	client     *api.API
 	batchSize  uint64
 	batchCache [][]api.Rating
+	progress   *ProgressBar
 	mu         sync.Mutex
 }
 
-func NewCrawler(client *api.API, batchSize uint64) *Crawler {
-	return &Crawler{
+func NewRatingCrawler(client *api.API, batchSize uint64) *RatingCrawler {
+	return &RatingCrawler{
 		client:    client,
 		batchSize: batchSize,
 	}
 }
 
-func (c *Crawler) GetAllRating() []api.Rating {
+func (c *RatingCrawler) GetAllRating() api.RatingList {
 	c.batchCache = nil
 
 	info := c.client.RatingInfo()
@@ -29,6 +30,8 @@ func (c *Crawler) GetAllRating() []api.Rating {
 		starts[i] = c.client.RatingTop(i)[0]
 	}
 	starts[5] = api.Rating{Number: info.Count * 2}
+	c.progress = NewProgressBar("Loading rating", float64(info.Count)/float64(c.batchSize))
+	c.progress.Add(0)
 
 	var wg sync.WaitGroup
 	wg.Add(9)
@@ -45,10 +48,12 @@ func (c *Crawler) GetAllRating() []api.Rating {
 			res[rating.Number-1] = rating
 		}
 	}
+
+	fmt.Println()
 	return res
 }
 
-func (c *Crawler) getInterval(start api.Rating, endNumber uint64, wg *sync.WaitGroup) {
+func (c *RatingCrawler) getInterval(start api.Rating, endNumber uint64, wg *sync.WaitGroup) {
 	var fSelect func([]api.Rating) api.Rating
 	var check func() bool
 	if start.Number > endNumber {
@@ -66,17 +71,10 @@ func (c *Crawler) getInterval(start api.Rating, endNumber uint64, wg *sync.WaitG
 
 		c.mu.Lock()
 		c.batchCache = append(c.batchCache, temp)
+		c.progress.Add(1)
 		c.mu.Unlock()
 
 		start = fSelect(temp)
-		log(last, start)
 	}
 	wg.Done()
-}
-
-func log(r api.Rating, r2 api.Rating) {
-	fmt.Printf("%d-%d  %s[%s]#%d / %s[%s]#%d\n",
-		r.Number, r2.Number,
-		r.Nickname, r.ClanTag, r.SpaId,
-		r2.Nickname, r2.ClanTag, r2.SpaId)
 }

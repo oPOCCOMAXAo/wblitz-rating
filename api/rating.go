@@ -24,3 +24,14 @@ type RatingInfo struct {
 		Percentile float64 `json:"percentile"`
 	} `json:"leagues"`
 }
+
+type RatingList []Rating
+
+func (r RatingList) GetIds() []uint64 {
+	l := len(r)
+	res := make([]uint64, l)
+	for i := 0; i < l; i++ {
+		res[i] = r[i].SpaId
+	}
+	return res
+}

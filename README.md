@@ -6,9 +6,9 @@ go build -o ./wblitz-rating.exe wblitz-rating/main
 ```
 
 ## Usage
-```wblitz-rating.exe [argument]```
+```wblitz-rating.exe [operation] [appId]```
 
-### Arguments
+### Operations
 
 `c` - crawl all needed data
 
