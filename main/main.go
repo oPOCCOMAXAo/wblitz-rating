@@ -12,17 +12,19 @@ func main() {
 	var f func()
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
+		case "c":
+			f = CrawlData
+			break
 		case "a":
 			f = AnalyzeData
 			break
-		default:
-			f = CrawlData
-			break
 		}
-	} else {
-		f = CrawlData
 	}
-	f()
+	if f != nil {
+		f()
+	} else {
+		Help()
+	}
 }
 
 func CrawlData() {
@@ -36,4 +38,12 @@ func AnalyzeData() {
 	start := time.Now()
 
 	fmt.Println(time.Since(start))
+}
+
+func Help() {
+	fmt.Println(`Wblitz Rating Utility. Usage:
+wblitz-rating [argument]
+Arguments:
+c - crawl all needed data
+a - analyze data`)
 }
