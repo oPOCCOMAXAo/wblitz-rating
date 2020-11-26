@@ -24,9 +24,6 @@ func main() {
 	case "a":
 		analyze()
 		break
-	case "t":
-		test()
-		break
 	default:
 		help()
 	}
@@ -46,12 +43,9 @@ func analyze() {
 		utils.LoadRating("./rating.csv"),
 		utils.LoadStats("./stats.csv"),
 	)
-	count := analytics.TotalCount(4, 4)
-	utils.SaveCountEntry("./count.csv", count)
-	utils.DrawCountEntry("./count", count)
-}
-
-func test() {
+	utils.DrawCountEntry("./count", analytics.TotalCount(4, 4))
+	utils.DrawCount2dEntry("./winrate", analytics.WinRate(5, 800))
+	utils.DrawCount2dEntry("./winrate", analytics.Damage(5, 800))
 }
 
 func help() {

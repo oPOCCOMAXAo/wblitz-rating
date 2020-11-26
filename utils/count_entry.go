@@ -51,7 +51,7 @@ func DrawCountEntry(fname string, data []CountEntry) {
 	for x := 0; x < width; x++ {
 		color := getLeagueColor(data[x].Rating)
 		for y := height - height*int(data[x].Count)/int(maxCount); y < height; y++ {
-			img.Set(x, y, color)
+			img.SetRGBA(x, y, color)
 		}
 	}
 

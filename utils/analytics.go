@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"wblitz-rating/api"
 )
 
@@ -62,14 +63,28 @@ func (a *Analytics) GetTopWinner() Entry {
 	return max
 }
 
-func (a *Analytics) TotalCount(step, movingAverage uint64) []CountEntry {
-	var max uint64 = 0
+func (a *Analytics) GetMaxRating() uint64 {
+	var res uint64 = 0
 	for _, entry := range a.entries {
-		if max < entry.Rating {
-			max = entry.Rating
+		if res < entry.Rating {
+			res = entry.Rating
 		}
 	}
+	return res
+}
 
+func (a *Analytics) GetMaxDamage() float64 {
+	var res float64 = 0
+	for _, entry := range a.entries {
+		if res < entry.AvgDamage {
+			res = entry.AvgDamage
+		}
+	}
+	return res
+}
+
+func (a *Analytics) TotalCount(step, movingAverage uint64) []CountEntry {
+	max := a.GetMaxRating()
 	total := max/step + 1
 	temp := make([]CountEntry, total)
 	for _, entry := range a.entries {
@@ -94,6 +109,42 @@ func (a *Analytics) TotalCount(step, movingAverage uint64) []CountEntry {
 			res[i].Rating = t
 		}
 		// res[i].Count /= movingAverage
+	}
+	return res
+}
+
+func (a *Analytics) WinRate(stepRating uint64, totalWinRate uint64) []Count2dEntry {
+	max := a.GetMaxRating()
+	totalRating := max/stepRating + 1
+	stepWinRate := 1.0 / float64(totalWinRate)
+	res := make([]Count2dEntry, totalRating)
+	for i := uint64(0); i < totalRating; i++ {
+		res[i].Rating = i * stepRating
+		res[i].Count = make([]uint64, totalWinRate+1)
+	}
+	for _, entry := range a.entries {
+		iRating := entry.Rating / stepRating
+		iWinRate := int(math.Floor(entry.WinRate / stepWinRate))
+		res[iRating].Count[iWinRate]++
+	}
+	return res
+}
+
+func (a *Analytics) Damage(stepRating uint64, totalDamage uint64) []Count2dEntry {
+	max := a.GetMaxRating()
+	maxDamage := a.GetMaxDamage()
+	fmt.Printf("Max Damage: %.0f\n", maxDamage)
+	totalRating := max/stepRating + 1
+	stepDamage := maxDamage / float64(totalDamage)
+	res := make([]Count2dEntry, totalRating)
+	for i := uint64(0); i < totalRating; i++ {
+		res[i].Rating = i * stepRating
+		res[i].Count = make([]uint64, totalDamage+1)
+	}
+	for _, entry := range a.entries {
+		iRating := entry.Rating / stepRating
+		i2 := int(math.Floor(entry.AvgDamage / stepDamage))
+		res[iRating].Count[i2]++
 	}
 	return res
 }
