@@ -20,10 +20,8 @@ func main() {
 	switch getArg(1) {
 	case "c":
 		crawl()
-		break
 	case "a":
 		analyze()
-		break
 	default:
 		help()
 	}
@@ -45,7 +43,7 @@ func analyze() {
 	)
 	utils.DrawCountEntry("./count", analytics.TotalCount(4, 4))
 	utils.DrawCount2dEntry("./winrate", analytics.WinRate(5, 800))
-	utils.DrawCount2dEntry("./winrate", analytics.Damage(5, 800))
+	utils.DrawCount2dEntry("./damage", analytics.Damage(5, 800))
 }
 
 func help() {
