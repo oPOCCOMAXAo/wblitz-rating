@@ -10,7 +10,7 @@ var colorsLeague = []color.RGBA{
 	{R: 163, G: 67, B: 230, A: 255},
 }
 
-func getLeagueColor(rating uint64) color.RGBA {
+func getLeagueColor(rating int64) color.RGBA {
 	if rating < 2000 {
 		return colorsLeague[0]
 	}

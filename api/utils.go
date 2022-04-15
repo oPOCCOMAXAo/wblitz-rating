@@ -1,17 +1,20 @@
 package api
 
-import "strconv"
+import (
+	"strconv"
+	"wblitz-rating/data"
+)
 
-func U2S(u uint64) string {
-	return strconv.FormatUint(u, 10)
+func I2S(u int64) string {
+	return strconv.FormatInt(u, 10)
 }
 
 func F2S(f float64) string {
 	return strconv.FormatFloat(f, 'f', -1, 64)
 }
 
-func S2U(s string) uint64 {
-	res, err := strconv.ParseUint(s, 10, 64)
+func S2I(s string) int64 {
+	res, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return 0
 	}
@@ -26,11 +29,11 @@ func S2F(s string) float64 {
 	return res
 }
 
-func U2SArr(u []uint64) []string {
-	l := len(u)
-	res := make([]string, l)
-	for i := 0; i < l; i++ {
-		res[i] = U2S(u[i])
+func RatingMap(r Rating) *data.Rating {
+	return &data.Rating{
+		Number:   r.Number,
+		PlayerID: r.SpaId,
+		Score:    r.Score,
+		MMR:      r.MMR,
 	}
-	return res
 }

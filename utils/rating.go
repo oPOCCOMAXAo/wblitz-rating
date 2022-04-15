@@ -6,34 +6,31 @@ import (
 	"os"
 	"strings"
 	"wblitz-rating/api"
+	"wblitz-rating/data"
 )
 
-const ratingHead = "Number;Rating;Nickname;Clan;ID;MMR"
+const ratingHead = "Number;Rating;ID;MMR"
 
-func ratingToCSV(r api.Rating) string {
+func ratingToCSV(r data.Rating) string {
 	return strings.Join([]string{
-		api.U2S(r.Number),
-		api.U2S(r.Score),
-		r.Nickname,
-		r.ClanTag,
-		api.U2S(r.SpaId),
+		api.I2S(r.Number),
+		api.I2S(r.Score),
+		api.I2S(r.PlayerID),
 		api.F2S(r.MMR),
 	}, ";")
 }
 
-func ratingFromCSV(line string) api.Rating {
+func ratingFromCSV(line string) data.Rating {
 	values := strings.Split(line, ";")
-	return api.Rating{
-		SpaId:    api.S2U(values[4]),
-		MMR:      api.S2F(values[5]),
-		Number:   api.S2U(values[0]),
-		Score:    api.S2U(values[1]),
-		Nickname: values[2],
-		ClanTag:  values[3],
+	return data.Rating{
+		Number: api.S2I(values[0]),
+		PlayerID:  api.S2I(values[2]),
+		Score:  api.S2I(values[1]),
+		MMR:    api.S2F(values[3]),
 	}
 }
 
-func SaveRating(fname string, data api.RatingList) {
+func SaveRating(fname string, data []data.Rating) {
 	f, err := os.Create(fname)
 	panicOnNonNil(err)
 	defer f.Close()
@@ -47,8 +44,8 @@ func SaveRating(fname string, data api.RatingList) {
 	_ = w.Flush()
 }
 
-func LoadRating(fname string) api.RatingList {
-	var res []api.Rating
+func LoadRating(fname string) []data.Rating {
+	var res []data.Rating
 	f, err := os.Open(fname)
 	panicOnNonNil(err)
 	defer f.Close()

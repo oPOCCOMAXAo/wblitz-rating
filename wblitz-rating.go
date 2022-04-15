@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 	"wblitz-rating/api"
+	"wblitz-rating/crawler"
+	"wblitz-rating/data"
 	"wblitz-rating/utils"
 )
 
@@ -29,11 +31,37 @@ func main() {
 }
 
 func crawl() {
-	apiClient := api.New(time.Millisecond*100, 10, getArg(2))
-	total := utils.NewRatingCrawler(apiClient, 4000).GetAllRating()
-	utils.SaveRating("./rating.csv", total)
-	stats := utils.NewStatCrawler(apiClient).GetAllStats(total.GetIds())
-	utils.SaveStats("./stats.csv", stats)
+	apiClient := api.New(api.Config{
+		Parallel:      10,
+		Timeout:       time.Second * 30,
+		ApplicationID: getArg(2),
+	})
+
+	storage, err := data.NewSqliteStorage("./data.db")
+	if err != nil {
+		panic(err)
+	}
+
+	/*crawlR, err := crawler.NewRatingCrawler(crawler.Config{
+		Storage:   storage,
+		API:       apiClient,
+		BatchSize: 2000,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	crawlR.Crawl()*/
+
+	crawlP, err := crawler.NewStatCrawler(crawler.Config{
+		Storage: storage,
+		API:     apiClient,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	crawlP.Crawl()
 }
 
 func analyze() {

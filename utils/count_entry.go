@@ -12,14 +12,14 @@ import (
 const countEntryHead = "Rating;Count"
 
 type CountEntry struct {
-	Count  uint64
-	Rating uint64
+	Count  int64
+	Rating int64
 }
 
 func countEntryToCSV(entry CountEntry) string {
 	return strings.Join([]string{
-		api.U2S(entry.Rating),
-		api.U2S(entry.Count),
+		api.I2S(entry.Rating),
+		api.I2S(entry.Count),
 	}, ";")
 }
 
@@ -41,7 +41,7 @@ func DrawCountEntry(fname string, data []CountEntry) {
 	width := len(data)
 	height := width / 2
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	maxCount := uint64(0)
+	maxCount := int64(0)
 	for _, entry := range data {
 		if maxCount < entry.Count {
 			maxCount = entry.Count

@@ -6,32 +6,33 @@ import (
 	"os"
 	"strings"
 	"wblitz-rating/api"
+	"wblitz-rating/data"
 )
 
 const statsHead = "ID;Nickname;Battles;Wins;DamageDealt"
 
-func statToCSV(r api.Player) string {
+func statToCSV(r data.Player) string {
 	return strings.Join([]string{
-		api.U2S(r.AccountId),
+		api.I2S(r.ID),
 		r.Nickname,
-		api.U2S(r.Battles),
-		api.U2S(r.Wins),
-		api.U2S(r.DamageDealt),
+		api.I2S(r.Battles),
+		api.I2S(r.Wins),
+		api.I2S(r.Damage),
 	}, ";")
 }
 
-func statFromCSV(line string) api.Player {
+func statFromCSV(line string) data.Player {
 	values := strings.Split(line, ";")
-	return api.Player{
-		AccountId:   api.S2U(values[0]),
-		Nickname:    values[1],
-		Battles:     api.S2U(values[2]),
-		Wins:        api.S2U(values[3]),
-		DamageDealt: api.S2U(values[4]),
+	return data.Player{
+		ID:       api.S2I(values[0]),
+		Nickname: values[1],
+		Battles:  api.S2I(values[2]),
+		Wins:     api.S2I(values[3]),
+		Damage:   api.S2I(values[4]),
 	}
 }
 
-func SaveStats(fname string, data []api.Player) {
+func SaveStats(fname string, data []data.Player) {
 	f, err := os.Create(fname)
 	panicOnNonNil(err)
 	defer f.Close()
@@ -45,8 +46,8 @@ func SaveStats(fname string, data []api.Player) {
 	_ = w.Flush()
 }
 
-func LoadStats(fname string) []api.Player {
-	var res []api.Player
+func LoadStats(fname string) []data.Player {
+	var res []data.Player
 	f, err := os.Open(fname)
 	panicOnNonNil(err)
 	defer f.Close()

@@ -3,6 +3,7 @@
 *.csv
 *.png
 *.db
+*.db-journal
 
 # built app
 wblitz-rating

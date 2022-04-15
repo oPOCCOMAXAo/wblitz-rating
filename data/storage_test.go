@@ -10,7 +10,7 @@ type StorageSuite struct {
 }
 
 func (s *StorageSuite) TestPlayer() {
-	data := []Player{
+	data := []*Player{
 		{ID: 1, Nickname: "test", Battles: 123, Damage: 12345, Wins: 67},
 		{ID: 5, Nickname: "test2", Battles: 122, Damage: 12344, Wins: 66},
 	}
@@ -26,9 +26,9 @@ func (s *StorageSuite) TestPlayer() {
 }
 
 func (s *StorageSuite) TestRating() {
-	data := []Rating{
-		{Number: 1, SpaID: 5, Score: 3, MMR: 1.05},
-		{Number: 2, SpaID: 1, Score: 2, MMR: 1.01},
+	data := []*Rating{
+		{Number: 1, PlayerID: 5, Score: 3, MMR: 1.05},
+		{Number: 2, PlayerID: 1, Score: 2, MMR: 1.01},
 	}
 
 	err := s.Storage.SaveRating(data)
@@ -39,4 +39,8 @@ func (s *StorageSuite) TestRating() {
 	})
 	s.Require().NoError(err)
 	s.Require().Equal(data, loaded)
+
+	ids, err := s.Storage.GetRatingIDs()
+	s.Require().NoError(err)
+	s.Require().Equal([]int64{5, 1}, ids)
 }

@@ -1,84 +1,136 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
-	"gitlab.com/opoccomaxao-go/request"
 	"strings"
 	"time"
+
+	"wblitz-rating/data"
+
+	"github.com/opoccomaxao-go/generic-collection/slice"
+	"github.com/pkg/errors"
+	"github.com/valyala/fasthttp"
+	"golang.org/x/sync/semaphore"
 )
 
 type API struct {
-	client        *request.Client
-	timeout       time.Duration
-	applicationId string
+	client *fasthttp.Client
+	sem    *semaphore.Weighted
+	config Config
 }
 
-func New(timeout time.Duration, parallel int64, applicationId string) *API {
+type Config struct {
+	Parallel      int64
+	Timeout       time.Duration
+	ApplicationID string
+}
+
+func New(config Config) *API {
+	if config.Parallel < 1 {
+		config.Parallel = 1
+	}
+
+	if config.Timeout < 0 {
+		config.Timeout = 0
+	}
+
 	return &API{
-		client:        request.New(parallel),
-		timeout:       timeout,
-		applicationId: applicationId,
+		client: &fasthttp.Client{
+			NoDefaultUserAgentHeader: true,
+			ReadTimeout:              config.Timeout,
+			WriteTimeout:             config.Timeout,
+		},
+		sem:    semaphore.NewWeighted(config.Parallel),
+		config: config,
 	}
 }
 
-func (a *API) PlayerInfo(ids []uint64) []Player {
-	r := a.client.Get("https://api.wotblitz.ru/wotb/account/info/?application_id="+a.applicationId+
-		"&account_id="+strings.Join(U2SArr(ids), ","),
-		a.timeout, nil)
-	if r.Status == 200 {
-		var res PlayerResponse
-		if err := json.Unmarshal(r.Response, &res); err != nil {
-			println(err.Error())
-			return nil
-		}
-		return res.All()
+func (a *API) request(url string, resPtr interface{}) error {
+	err := a.sem.Acquire(context.Background(), 1)
+	if err != nil {
+		return err
 	}
-	return nil
+	defer a.sem.Release(1)
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	res := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(res)
+
+	req.SetRequestURI(url)
+
+	err = a.client.Do(req, res)
+	if err != nil {
+		return err
+	}
+
+	code := res.StatusCode()
+	if code != fasthttp.StatusOK {
+		return errors.Errorf("status: %d", code)
+	}
+
+	return json.Unmarshal(res.Body(), resPtr)
+}
+
+func (a *API) PlayerInfo(ids []int64) []*data.Player {
+	var res PlayerResponse
+
+	err := a.request(
+		"https://api.wotblitz.ru/wotb/account/info/?application_id="+a.config.ApplicationID+"&account_id="+strings.Join(slice.Map(ids, I2S), ","),
+		&res,
+	)
+	if err != nil {
+		println(err.Error())
+	}
+
+	return res.All()
 }
 
 func (a *API) RatingInfo() RatingInfo {
-	r := a.client.Get("https://ru.wotblitz.com/ru/api/rating-leaderboards/season/", a.timeout, nil)
-	if r.Status == 200 {
-		var res RatingInfo
-		if err := json.Unmarshal(r.Response, &res); err != nil {
-			println(err.Error())
-			return RatingInfo{}
-		}
-		return res
+	var res RatingInfo
+
+	err := a.request("https://ru.wotblitz.com/ru/api/rating-leaderboards/season/", &res)
+	if err != nil {
+		println(err.Error())
 	}
-	return RatingInfo{}
+
+	return res
 }
 
-func (a *API) RatingTop(leagueId uint64) []Rating {
-	r := a.client.Get("https://ru.wotblitz.com/ru/api/rating-leaderboards/league/"+U2S(leagueId)+"/top/", a.timeout, nil)
-	if r.Status == 200 {
-		var res RatingTopResponse
-		if err := json.Unmarshal(r.Response, &res); err != nil {
-			println(err.Error())
-			return nil
-		}
-		return res.Result
+func (a *API) RatingTop(leagueID int64) []*data.Rating {
+	var res RatingTopResponse
+
+	err := a.request(
+		"https://ru.wotblitz.com/ru/api/rating-leaderboards/league/"+I2S(leagueID)+"/top/",
+		&res,
+	)
+	if err != nil {
+		println(err.Error())
 	}
-	return nil
+
+	return slice.Map(res.Result, RatingMap)
 }
 
-func (a *API) RatingNeighbors(userId uint64, neighborsCount uint64) []Rating {
-	r := a.client.Get("https://ru.wotblitz.com/ru/api/rating-leaderboards/user/"+U2S(userId)+"/?neighbors="+U2S(neighborsCount), a.timeout, nil)
-	if r.Status == 200 {
-		var res RatingNeighborsResponse
-		if err := json.Unmarshal(r.Response, &res); err != nil {
-			println(err.Error())
-			return nil
-		}
-		return res.Neighbors
+func (a *API) RatingNeighbors(userID int64, neighborsCount int64) []*data.Rating {
+	var res RatingNeighborsResponse
+
+	err := a.request(
+		"https://ru.wotblitz.com/ru/api/rating-leaderboards/user/"+I2S(userID)+"/?neighbors="+I2S(neighborsCount),
+		&res,
+	)
+	if err != nil {
+		println(err.Error())
 	}
-	return nil
+
+	return slice.Map(res.Neighbors, RatingMap)
 }
 
-func (a *API) GetRatingTop1() Rating {
+func (a *API) GetRatingTop1() *data.Rating {
 	res := a.RatingTop(0)
 	if len(res) > 0 {
 		return res[0]
 	}
-	return Rating{}
+	return &data.Rating{}
 }

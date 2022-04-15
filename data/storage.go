@@ -11,8 +11,9 @@ type BatchConfig struct {
 
 type Storage interface {
 	io.Closer
-	SavePlayers([]Player) error
-	LoadPlayers(*BatchConfig) ([]Player, error)
-	SaveRating([]Rating) error
-	LoadRating(*BatchConfig) ([]Rating, error)
+	SavePlayers([]*Player) error
+	LoadPlayers(*BatchConfig) ([]*Player, error)
+	SaveRating([]*Rating) error
+	LoadRating(*BatchConfig) ([]*Rating, error)
+	GetRatingIDs() ([]int64, error)
 }

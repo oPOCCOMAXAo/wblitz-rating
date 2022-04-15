@@ -8,8 +8,8 @@ import (
 )
 
 type Count2dEntry struct {
-	Count  []uint64
-	Rating uint64
+	Count  []int64
+	Rating int64
 }
 
 func DrawCount2dEntry(fname string, data []Count2dEntry) {
@@ -20,7 +20,7 @@ func DrawCount2dEntry(fname string, data []Count2dEntry) {
 	for x := 0; x < width; x++ {
 		entry := data[x]
 		c := getLeagueColor(entry.Rating)
-		maxCount := uint64(1)
+		maxCount := int64(1)
 		for _, count := range entry.Count {
 			if maxCount < count {
 				maxCount = count
@@ -28,9 +28,9 @@ func DrawCount2dEntry(fname string, data []Count2dEntry) {
 		}
 		for y := 0; y < height; y++ {
 			c2 := color.RGBA{
-				R: uint8(uint64(c.R) * entry.Count[height-y-1] / maxCount),
-				G: uint8(uint64(c.G) * entry.Count[height-y-1] / maxCount),
-				B: uint8(uint64(c.B) * entry.Count[height-y-1] / maxCount),
+				R: uint8(int64(c.R) * entry.Count[height-y-1] / maxCount),
+				G: uint8(int64(c.G) * entry.Count[height-y-1] / maxCount),
+				B: uint8(int64(c.B) * entry.Count[height-y-1] / maxCount),
 				A: 255,
 			}
 			img.SetRGBA(x, y, c2)
