@@ -1,4 +1,9 @@
-# Goland
+.vscode
 .idea
 *.csv
 *.png
+*.db
+
+# built app
+wblitz-rating
+wblitz-rating.exe
